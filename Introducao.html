@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Introdução - Ansible</title>
+        <meta name="description" content="Este é um site referênte à estudos sobre a plataforma Ansible">
+    </head>
+    
+    <body>
+        <h1>Introdução - Ansible</h1>
+        <p>O Ansible é uma <strong>ferramenta de automação</strong> <i>open source</i>, usada para configurar servidores, instalar softwares e executar tarefas a partir de uma localização central, ou seja, é um mecanismo que executa instruções a partir de uma máquina de controle que se comunica com outros servidores remotamente em SSH. O Ansible também pode ser usado por usuários não privilegiados. Por exemplo, um DBA que usa o ID de login do MySQL, pode usar do Ansible para criar bases, adicionar usuários e definir privilégios.</p>
+        <p>Um exemplo simples do uso da ferramenta Ansible, é de um administrador de um sistema que provisiona 100 servidores por dia, devendo executar uma série de comandos em <i>bash</i> em cada um desses servidores. Com o Ansible, essa taerfa se torna mais simples, pelo fato de conseguir escrever os comandos que devem ser executados em sua máquina local e redireciona-los para as demias 100 máquinas através do Ansible, ou seja, compartilhando esses comandos para os outros 100 servidores.</p>
+        <p>Diante disso, o Ansible usa de operadores que definem o comportamento do que será executado pelo usuário, de forma a gerenciar e organizar suas tarefas de execuções e etc. Sendo as principais:</p>
+        <ul>
+            <li><strong>Task</strong> - Sendo a menor unidade de trabalho, a qual executa as ações escritas pelo usuário, como instalação de um banco, deslocamento de arquivos, comandos e etc.</li>
+            <br>
+            <li><strong>Plays</strong> - Este é o "orietador" das <i>tasks</i>, ou seja, é definido a ele a função em que N <i>task's</i> serão realizadas. Por exemplo, ao definir o <i>Play</i> "Preparar banco", nele serão inseridas as <i>task's</i> instalar pacote de banco de dados, criar base, criar usuários e etc.</li>
+            <br>
+            <li><strong>Playbook</strong> - Este pode ser tido como o "gerente do gerenciador", ou seja, um <i>Playbook</i> é constituído por <i>Play's</i> que irão gerir tarefas neste contexto. Por exemplo, ao se ter um <i>Playbook</i> "Preparação de site para banco de dados", ele será composto por 2 <i>Play's</i> A - Criação do banco (<i>Task</i> A.a - instalar pacote de banco de dados, A.b - criar base) e B - Criar o servidor web (<i>Task</i> B.a - Escrever HTML da página web, B.b - Subir a aplicação para a rede).</li>
+            <br>
+            <li><strong>Roles</strong> - Essas são usadas para armazenar e compartilhar <i>Playbook's</i> com outros usuários, de forma que eles possam acessar suas tarefas criadas ou até mesmo no andamento de um projeto, em que N usuários criam <i>Playbook's</i> diferentes para depois junta-los pelas <i>roles</i>.</li>
+            <br>
+            <li><strong>Ansible Galaxy</strong> - É um repositório online onde as <i>role's</i> serão carregadas e compartilhadas com outras pessoas da web. Sendo integrada com a plataforma GitHub, organizadas em repositórios.</li>
+        </ul>
+        <p>Portanto, perceba que todos esses operadores se completam de alguma forma. Para que seu conhecimento seja mais concretizado, segue uma ilustração abaixo da composição hierárquica de cada um:</p>
+        <img src="https://img.mandic.com.br/blog/2018/02/ansible-definitions.png">
+        <hr>
+        <h3>Instalação do Ansible</h3> 
+            <p>Aplataforma do Ansible é gerida preferencialemnte para uso em sistemas Linux e como pré-requisito, necessitam do auxílio do <i>Python2</i> instalado na máquina (o que normalemnte já é proviniente  das distribuições Linux). Portanto, seu prcesso de instalçao é bem simples, mas varia dependendo do sistema operacional usado, sendo:</p>
+            <ul>
+                <li><strong>Ubuntu</strong></li>
+                    <pre>
+    <strong>sudo apt-get install</strong> software-properties-common
+    <strong>sudo apt-add-repository</strong> ppa:ansible/ansible
+    <strong>sudo apt-get</strong> update
+    <strong>sudo apt-get install</strong> ansible
+                    </pre>
+                <li><strong>YUM</strong></li>
+                    <pre>
+    <strong>sudo yum install</strong> ansible
+                    </pre>
+                <li><strong>Debian</strong></li>
+                    <pre>
+    <strong>sudo apt-get</strong> update
+    <strong>sudo apt-get install</strong> python-pip python-dev git -y
+    <strong>sudo pip install</strong> PyYAML jinja2 paamiko
+    <strong>git clone</strong> https://gitub.com/ansible/ansible.git
+    <strong>cd</strong> ansible
+    <strong>sudo make install</strong>
+    <strong>sudo mkdir</strong> /etc/ansible
+    <strong>sudo cp</strong> ~/ansible/examples/hosts/etc/ansible/
+                    </pre>
+            </ul>
+            <p>Algo simples de ser instalado como qualquer outro software, mas lembre-se da necessidade do Python no servidor central que será usado. Para verificar a existência do Python e até mesmo se a instalação do Ansible seguiu corretamente, basta dar um comando de verificação da versão: <i>python --version</i> e <i>ansible --version</i>. Caso sejam exibidas informações sobre a versão de ambas as ferramentas, poderá seguir tranquilamente.</p>
+    </body>
+</html>
