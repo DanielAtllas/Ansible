@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Primeiros Passos - Ansible</title>
+        <meta name="description" content="Este é um site referênte à estudos sobre a plataforma Ansible">
+    </head>
+    
+    <body>
+        <h1>Primeiros Passos - Ansible</h1>
+        <p>Tendo realizada a instalação do Ansible com sucesso, podemos dar inicio aos estudos práticos do mesmo, onde a primeira etapa será de <strong>criação de um diretório</strong> em que serão encontrados os operadores da plataforma, realizando através de um simples comando <i>mkdir</i> e logo em seguida, criaremos um arquivo VI chamado <strong>hosts</strong>. No <i>hosts</i> serão encontrados os IP's dos servidores que serão aplicadas as tarefas do Ansible, ou seja, os servidores que irão sofrer as execuções que desejarmos através da plataforma, como no exemplo abaixo:</p>
+        <pre>
+    <strong>mkdir</strong> Ansible
+    <strong>vi</strong> hosts
+        </pre>
+        <p>Para dar inicio, podemos utilizar da nosso própria máquina local para os testes das tarefas. Portanto, criaremos o grupo <strong>[local]</strong> dentro do arquivo <i>hosts</i> e passaremos o <i>hostname</i> da máquina em questão. Em seguida, outros 3 parâmetros devem ser inseridos junto ao IP da máquina, sendo eles:</p>
+        <ul>
+            <li><strong>ansible_connection</strong>=<i>Conexão</i> - Aqui é definido o tipo de conexão que será realizada com este IP, seja ela <i>local</i> ou <i>remota</i>.</li>
+            <br>
+            <li><strong>ansible_python_interpreter</strong>=<i>interpretador</i> - Onde será definido o tipo do leitor de comandos que serão escritos, seja em linguagem Python, Shell e etc.</li>
+            <br>
+            <li><strong>gather_facts</strong>=<i>true/false</i> - Parâmetro que fará a obenção das configurações e dados do servidor que está sendo conectado, como o usuário, o sistema e etc.</li>
+        </ul>
+        <p>Seguindo o exemplo citado acima, faremos essas defnições para com a máquina local que estaremos usando:</p>
+        <pre>
+    [local]
+    192.541.06 <strong>ansible_connection</strong>=local <strong>ansible_python_interpreter</strong>=python <strong>gather_facts</strong>=false
+    <strong>~
+    ~
+    ~</strong>
+    
+        </pre>
+        <p>Após isso, é necessário se <strong>conectar aos servidores</strong> que foram definidos no arquivos <i>hosts</i>, então precisamos gerar a chave no nó master para uma autenticação visa chave SSH. Algo bem simples realizado pelo comando: <i><strong>ssh-keygen</strong></i>. Feito isso, dois arquivos serão criados os <i>~/.ssh/id_rsa</i> (chave privada) e <i>~/.ssh/id_sa.pub</i> (chave pública) os quais serão as chaves de SSH que foram geradas. Essas chaves SSH serão chaves assimétricas, ou seja, chaves que permitem a conexão de apenas uma via de um usuário X do servidor A com o usuário Y do Sevidor B (Com essas chaves, a conexão se torna unicamente entre esses dois usuários em seus respectivos servidores, nenhum outro usuário mesmo que do mesmo servidor, poderá se conectar). Em seguida, precisaremos copiar a chave pública para os servidores do diretório <i>hosts</i>. Portanto, necessitaremos entrar no servidor que sofrerá o acesso (servidores listados no diretório <i>hosts</i>) e adicionaremos a chave públuca criada no servidor central, a esses servidores secundários. Seguindo esta linha de raciocínio, segue abaixo um exemplo de como ficaria esse processo:</p>
+        <pre>
+    <strong>ssh-keygen</strong>
+    
+Feito isso, os dois arquivos de chaves serão criados, precisamos então exibir o conteúdo da chave pública e copiá-lo:
+
+    <strong>cat id_rsa.pub</strong>
+    
+Ao copiar o conteúdo exibido, precisaremos entrar nos servidores secundários (um de cada vez) e colar esse conteúdo no arquivo <strong>authorized_keys</strong> do diretório <strong>.ssh/</strong>    
+    
+    <strong>cd</strong> .ssh/
+    <strong>vi</strong> authorized_keys
+        </pre>
+        <p>Para a verificação se a conexão com os IP's está realizada com sucesso entre entre eles e o servidor central, podemos dar um comando para <i>pingar</i> esses servidores e caso seja dada uma exibição com <strong>SUCESS</strong>, é entendido que a conexão está estabelecida perfeitamente. Este procedimento é realizado pelo comando:</p>
+        <pre>
+    <strong>ansible -i</strong> hosts all <strong>-m</strong> ping 
+        </pre>
+        <p>Feito isso, as configurações do inventário terão sidos configuradas, então partiremos agora para o segundo passo a ser seguido é da criação do arquivo <strong>main</strong>, o qual chamará os <i>Playbook's</i> que serão executados nos servidores, ou seja, funcionará como um programa principal que chamará das <i>role's</i> que serão criadas. Para isso, criamos o arquivo VI com o nome <strong>main.yml</strong> e em seguida iremos inserir os parâmetros do <i>main</i> contidos no arquivo, sendo eles <strong>hosts:</strong> (Indentificação dos IP's que serão usaados ou do grupo de IP's) e <strong>roles:</strong> (Onde serão passadas por ordem as <i>role's</i> compostas pelas <i>tak's</i> que serão executadas). Como no exemplo abaixo:</p>
+        <pre>
+    <strong>---
+    - hosts:</strong> local
+      <strong>roles:</strong>
+      - create
+        </pre>
+        <p>Realizado os procedimentos acima, partiremos para o terceiro passo, em que iremos <strong>criar o diretório das role's</strong>. Para isso, precisamos estarmos localizados na pasta <i>ansible</i> criada anteriormente e daremos o comando de criação <i>mkdir</i> com o nome de <i>roles</i>. Em seguida, entraremos no diretório criado e criaremos novos diretórios relacionados as <i>Task's</i> que serão feitas. Dando continuidade ao exemplo, a <i>Role</i> em questão que iremos criar é a de <strong>create</strong>, portanto, criaremos um diretório de mesmo nome. Isto é realizado pelo comando do <strong>ansible-galaxy</strong> o qual já irá criar a <i>role</i> com as pastas necessárias, como a pasta d arquivos (<i>files</i>), comandos/tarefas (<i>taks</i>) e etc:</p>
+        <pre>
+    <strong>cd</strong> /ansible
+    <strong>mkdir</strong> roles
+    <strong>cd</strong> roles
+    <strong>ansible-galaxy init</strong> create
+    <strong>cd</strong> create
+        </pre>
+        <p>Tendo a <i>role create</i> criada, podemos listar os arquivos e diretórios nela presentes pelo comando <i>ls -lh</i> ou pelo comando <i>tree </i>. Agora, partiremos para a <strong>criação das task's</strong> (campo onde ficarão localizados os comandos que serão escritos e as tarefas). Precisamos entrar no diretório <strong>tasks</strong> e criarmos os arquivos VI das <i>task's</i> e inserirmos esse arquivo criado em um outro arquivo que já se encontra neste diretório, chamado também de <strong>main.yml</strong>. Para isso, precisamos apenas chamar a <i>task</i> criada neste <i>main</i>:</p>
+        <pre>
+    <strong>- include</strong>: <i>arquivo task criada</i>
+        </pre>
+        <p>A criação das <i>task's</i> se torna bem intuitiva e de fácil entendimento quando bem organizado, portanto boaspráticas são passadas nas criações desses comandos, onde os principais parâmetos que ela deve conter são os seguintes:</p>
+        <pre>
+    ---    
+    - <strong>hosts:</strong> <i>Aqui se encontrarão o grupo dos servidores que soferão as ações das task's</i>
+      <strong>user:</strong> <i>Será a expificação do usuário que fará a execução, seja ele root ou não</i>
+      
+      <strong>tasks:</strong>
+       - <strong>name:</strong> <i>Nome da primeira tarefa que será realizada</i>
+         <strong>descrition:</strong> <i>Um descrição do que essa task fará é uma das boas práticas</i>
+         <strong>action:</strong> <i>Campo onde ficarão os comandos que serão realizados (este pode conter variáveis, módulos, shell e etc)</i>
+         <strong>with_items:</strong> <i>Campo dos itens que serão afetados/instalados caso necessário</i>
+    
+        </pre>
+        <p>Segue abaixo uma imagem de exemplo na criação de um <i>playbook</i> que faz a instalação de alguns pacotes nos servidores de <i>webserver</i>:</p>
+        <img src="https://static.imasters.com.br/wp-content/uploads/2017/04/apt09.jpg">
+    </body>
+</html>
