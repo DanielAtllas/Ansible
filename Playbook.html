@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Playbook - Ansible</title>
+        <meta name="description" content="Este é um site referênte à estudos sobre a plataforma Ansible">
+    </head>
+    
+    <body>
+        <h1>Escrevendo Playbook's - Ansible</h1>
+        <p>No Ansible, o so dos <i>Playbook's</i> e suas respectivas <i>task's</i> é o que mais será escrito po seus usuários, uma vez que através de sua execução, serão realizadas tarefas aos servidores exigidos em seu escopo. Portanto, a orientação da escrita bem organizada do <i>Playbook</i> é de extrema impotância, para que o entendimento e lógica aplicada no <i>playbook</i> estejam apresentáveis. Diante disso, algumas seções são definidas e usadas durante a escrita, os quais seguem uma lógica de árvore (dependência das seções).</p>
+        <p>De forma básica, o corpo de um <i>playbook</i> é escrito pela determinação do <i>hosts</i> (servidores ou grupo que serão aplicadas as tarefas) e <i>tasks</i> (tarefas que serão realizadas durante a execução), como no exemplo abaixo:</p>
+        <pre>
+    <strong>---
+    - hosts:</strong> local
+      <strong>tasks:
+        - name:</strong> Install Package
+          <strong>action:</strong> apt name=vim state=latest
+        </pre>
+        <p>Porém, um <i>playbook</i> muitas vezes não será assim tão simples, pois ele pode usufruir de outras seções de comando para sua realização, entre elas, as principais e mais usadas são:</p>
+        <ul>
+            <li><strong>Trabalhando com variáveis</strong></li>
+                <p>Existem diferentes maneiras para o uso de variáveis com o Ansible, onde a maneira mais simples é através da seção <strong>vars</strong> de um <i>playbook</i>. Por esta seção, podemos definir variáveis no iniício do script e chama-las durante as <i>task's</i>. Como no exemplo a seguir, onde uma variável <strong>package</strong> é definida com valores dos pacotes que serão instalados pela <i>task</i> <strong>install package</strong>:</p>
+                <pre>
+            <strong>---
+            - hosts:</strong> local
+            <strong>vars:</strong>
+                package: vim
+            <strong>tasks:
+                - name:</strong> Install Package
+                  <strong>action:</strong> apt name={{ package }} state=latest    
+                </pre>
+                <p>Perceba o uso das chaves duplas no momento de chamada da variável, isto a tornará uma variável global, a qual pode ser acessada a partir de qualquer ponto do provisionamento, como arquivos e etc.</p>
+            <li><strong>Usando Loops</strong></li>
+                <p>Os loops são normalmente usados para repetir uma <i>task</i> usando diferentes valores de entrada, ou seja, repetir um mesmo comando/tarefa em N parâmetros, como por exemplo, em vez d criar 10 <i>task's</i> para 10 diferentes pacotes a serem instalador, podemos usar da seção de loop <strong>with_items</strong> que repetirá esta função para os 10 pacotes:</p>
+                <pre>
+            <strong>---
+            - hosts:</strong> local
+            <strong>tasks:
+                - name:</strong> Install Package
+                  <strong>action:</strong> apt name={{ item }} state=latest  
+                  <strong>with_items:</strong>
+                    - vim
+                    - git
+                    - curl
+                </pre>
+                <p>Percebs que em teoria, seu uso funciona exatamente como se fosse uma variável lista, a qual conterá os valores de cada pacote a sr instalado, nesse caso.</p>
+            <li><strong>Usando condicionais</strong></li>
+                <p>As condicionais podem ser usadas para decidir dinamicamente se uma tarefa/comando deve ou não ser executada, de acordo com uma variável recebida ou uma saída de comando. Para isso, usamos da seção <strong>when</strong> e passamos a especificação. Como no exemplo abaixo em que serão desligados apenas os servidores que forem de sistema Debian:</p>
+                <pre>
+            <strong>---
+            - hosts:</strong> webservers
+            <strong>tasks:
+                - name:</strong> Shotdawn Debian Systems
+                <strong>action:</strong> /sbin/shutdown -t now
+                <strong>when:</strong> ansible_os_family == "Debian"
+                </pre>
+                <p>Dessa forma, antes da execução dessa <i>task</i>, uma verificação será avaliada para o <i>ansible_os_family</i> e caso o retorno seja <i>true</i>, a execução será realizada. Outro exemplo que podemos analisar é no quando o valor de retorno é obtido a partir da execução de uma <i>task</i> X, ou seja, neste caso, as <i>task's</i> seguintes serão executadas dependendo do valor de retorno da primeira <i>task</i> (<i>true</i> ou <i>false</i>):</p>
+                <pre>
+            <strong>---
+            - hosts:</strong> webservers
+            <strong>tasks:
+                - name:</strong> Check if PHP is installed
+                  <strong>register:</strong> php_installed
+                  <strong>action:</strong> php -v
+                  <strong>ignore_errors:</strong> true
+                  
+                  
+                <strong>-name:</strong> This task is only executed if PHP is installed
+                <strong>debug:</strong> var=php_install
+                <strong>when:</strong> php_installed|success
+                
+                
+                <strong>-name:</strong> This task is only executed if PHP is NOT installed
+                <strong>debug:</strong> msg='PHP is NOT installed'
+                <strong>when:</strong> php_installed|failed
+                </pre>
+        </ul>
+        <p>Outro aspecto importante, é que o Ansible utiliza de <strong>módulos</strong> para a escrita de seus comandos e <i>task's</i>. Esses módulos são referentes a formais mais práticas para a execução de alumas tarefas relacionadas a alguma plataforma, ou seja, funcionam como um abreviador de execução o Ansible para com alguma plataforma. Como por exemplo, digamos que uma <i>playbook</i> será escrito com o objetivo de fazer a instalação do banco de dados MySQL e logo em seguida, o usuário deseje criar uma base e um usuário para que tenha acesso a essa base. Diante disso, durante a escrita das <i>task's</i> o usuário fará uso dos <strong>database modules</strong> que auxiliam o banco na parte de criação de base, ciação de usuário, manipulação de linhhas e colunas, consultas e etc.</p>
+        <p>Portanto, existem inúmeros módulos diferentes para diferetes plataformas de uso, com diferentes funções e seria um tano exaustivo listar todos aqui nesta orientação. Para que seu alncace seja mias direto, segue um link abaixo que lista todos os módulos existentes no Ansible, bastando escolher o que mais te atende e estuda-lo (este link é sobre a <strong>documentação do Ansible</strong>, então além dos módulos, você poderá encontrar outras orientações escritas pela própria ferramenta, como guias, manuais e etc): <a href="https://docs.ansible.com/ansible/latest/modules/modules_by_category.html">https://docs.ansible.com/ansible/latest/modules/modules_by_category.html</a></p>
+    </body>
+</html>
